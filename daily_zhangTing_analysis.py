@@ -14,7 +14,7 @@ def get_daystock(now, key):
   #import pdb;pdb.set_trace()
   if os.path.exists(file_path):
     print('Data alreay exist, load from local')
-    df = pd.read_csv(file_path)
+    #df = pd.read_csv(file_path)
   else:
     print('Data not exist, downloading')
     pro = ts.pro_api(key)

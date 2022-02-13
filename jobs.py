@@ -1,30 +1,24 @@
 import datetime
+import os
 
-import daily_zhangTing_analysis
-from config import Configure_storer 
-from mail_senter import send_mail
-
-def input_data_zt_analyze():
-  print('=======')
-  print(datetime.date.today())
-  config_storer = Configure_storer('./config/config.yml')
-  date = enter_date()
-  df = daily_zhangTing_analysis.get_daystock(date ,config_storer.data['tushare_api'])
-  print(df.head())
+from controller import mail
+from service import daily_service, stock_basic
+from service.daily_analyze import zhang_ting_analyze
 
 
-def today_zt_analyze():
-  print('=======')
-  current = (datetime.datetime.now())
-  print(current)
-  config_storer = Configure_storer('./config/config.yml')
-  file1, file2 = daily_zhangTing_analysis.daily_zt_analyze(current ,config_storer.data['tushare_api'])
-  send_mail(file1, file2, config_storer.data)
-
+def zt_daily_job():
+      now = datetime.datetime.now()
+      daily_service.save_dayily(now)
+      #stock_basic.save()
+      result = zhang_ting_analyze(now)
+      #os.mkdir("./data/daily/" +  str(now.strftime("%Y%m%d")))
+      zt_amt_file = "./data/daily/" +  str(now.strftime("%Y%m%d")) +"/zt_amt.csv"
+      zt_cnt_file = "./data/daily/" +  str(now.strftime("%Y%m%d")) +"/zt_cnt.csv"
+      result[0].to_csv(zt_amt_file)
+      result[1].to_csv(zt_cnt_file)
+      mail.send(zt_amt_file, zt_cnt_file)
+      
+      
 
 if __name__ == '__main__':
-  today_zt_analyze()
-  from apscheduler.schedulers.blocking import BlockingScheduler
-  scheduler = BlockingScheduler()
-  scheduler.add_job(today_zt_analyze, 'cron', day_of_week='mon-fri', hour='16', minute=0)
-  scheduler.start()
+      zt_daily_job()
